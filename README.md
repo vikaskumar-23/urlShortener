@@ -4,7 +4,7 @@ A simple, self-hosted URL shortener built in C++ using [cpp-httplib](https://git
 Short URLs expire after 24 hours.
 
 ---
-
+![Screenshot](Screenshot.png)
 ## Features
 
 * **Shorten URLs** via a REST API (`/shorten`).
