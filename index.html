@@ -3,82 +3,333 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>URL Shortener</title>
+  <title>Advanced URL Shortener</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    .transition-all {
+      transition: all 0.3s ease;
+    }
+    .loader {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid #8B5CF6;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .tooltip {
+      position: relative;
+      display: inline-block;
+    }
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 140px;
+      background-color: #555;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 5px;
+      position: absolute;
+      z-index: 1;
+      bottom: 150%;
+      left: 50%;
+      margin-left: -70px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .tooltip .tooltiptext::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: #555 transparent transparent transparent;
+    }
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen">
-  <div class="bg-gray-800 shadow-2xl rounded-2xl p-8 w-full max-w-md">
-    <h1 class="text-3xl font-extrabold mb-6 text-center text-purple-400">URL Shortener</h1>
-    <form id="shortenForm" class="space-y-4">
-      <input
-        id="url"
-        name="url"
-        type="url"
-        placeholder="Enter your long URL"
-        class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-100"
-        required
-      >
-      <button
-        type="submit"
-        class="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white py-3 rounded-lg hover:from-purple-700 hover:to-purple-900 transition-all duration-200"
-      >
-        Shorten URL
-      </button>
-    </form>
-    <div id="result" class="mt-6 text-center"></div>
+<body class="bg-gray-900 text-gray-200 min-h-screen px-4 py-8">
+  <div class="container mx-auto max-w-4xl">
+    <!-- Main content -->
+    <div class="bg-gray-800 shadow-2xl rounded-2xl p-8 mb-8">
+      <div class="flex items-center justify-center mb-6">
+        <i class="fas fa-link text-purple-400 text-2xl mr-3"></i>
+        <h1 class="text-3xl font-extrabold text-center text-purple-400">Advanced URL Shortener</h1>
+      </div>
+      
+      <!-- URL Form -->
+      <form id="shortenForm" class="space-y-4">
+        <div>
+          <label for="url" class="block text-sm font-medium text-gray-400 mb-1">Long URL</label>
+          <input
+            id="url"
+            name="url"
+            type="url"
+            placeholder="https://example.com/your-very-long-url-goes-here"
+            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-100"
+            required
+          >
+          <p class="mt-1 text-xs text-gray-500">Enter the URL you want to shorten</p>
+        </div>
+        
+        <!-- Custom slug (togglable) -->
+        <div class="flex items-center space-x-2">
+          <input type="checkbox" id="useCustomSlug" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-600 rounded">
+          <label for="useCustomSlug" class="text-sm text-gray-300">Use custom URL slug</label>
+          <div class="tooltip ml-1">
+            <i class="fas fa-question-circle text-gray-500"></i>
+            <span class="tooltiptext">Create your own unique URL identifier (4-16 characters, letters, numbers, hyphen and underscore only)</span>
+          </div>
+        </div>
+        
+        <div id="customSlugContainer" class="hidden">
+          <label for="customSlug" class="block text-sm font-medium text-gray-400 mb-1">Custom Slug</label>
+          <input
+            id="customSlug"
+            name="customSlug"
+            type="text"
+            placeholder="my-custom-slug"
+            pattern="^[a-zA-Z0-9_-]{4,16}$"
+            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-gray-100"
+          >
+          <p class="mt-1 text-xs text-gray-500">4-16 characters, letters, numbers, hyphen and underscore only</p>
+        </div>
+        
+        <div class="pt-2">
+          <button
+            type="submit"
+            class="w-full bg-gradient-to-r from-purple-600 to-purple-800 text-white py-3 rounded-lg hover:from-purple-700 hover:to-purple-900 transition-all duration-200 flex items-center justify-center"
+          >
+            <i class="fas fa-cut mr-2"></i>
+            Shorten URL
+          </button>
+        </div>
+      </form>
+      
+      <!-- Results container -->
+      <div id="result" class="mt-6 hidden">
+        <div class="border-t border-gray-700 pt-6">
+          <h2 class="text-xl font-bold text-purple-400 mb-4">Your shortened URL</h2>
+          
+          <div class="mb-4">
+            <div class="flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0 sm:space-x-3">
+              <input
+                id="shortUrl"
+                type="text"
+                readonly
+                class="px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg sm:rounded-r-none w-full focus:outline-none text-gray-100"
+              >
+              <div class="flex">
+                <button
+                  id="copyBtn"
+                  class="bg-purple-600 text-white px-4 py-2 rounded-lg sm:rounded-l-none sm:rounded-r-none hover:bg-purple-700 transition-colors duration-200 flex-shrink-0"
+                >
+                  <i class="far fa-clipboard mr-1"></i> Copy
+                </button>
+
+              </div>
+            </div>
+          </div>
+          
+
+          
+          <div class="flex justify-between items-center mb-2">
+            <p class="text-sm text-gray-400">Link expires in <span id="expiryHours">24</span> hours</p>
+            <button id="statsBtn" class="text-sm text-purple-400 hover:text-purple-300 flex items-center">
+              <i class="fas fa-chart-bar mr-1"></i> 
+              <span id="statsText">View Stats</span>
+            </button>
+          </div>
+          
+
+        </div>
+      </div>
+      
+      <!-- Loading indicator -->
+      <div id="loading" class="mt-6 text-center hidden">
+        <div class="flex items-center justify-center">
+          <div class="loader mr-3"></div>
+          <span>Processing your URL...</span>
+        </div>
+      </div>
+      
+      <!-- Error message -->
+      <div id="errorMessage" class="mt-6 text-center hidden">
+        <p class="text-red-500"></p>
+      </div>
+    </div>
+    
+    <!-- Features section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+        <div class="flex items-center mb-3">
+          <div class="bg-purple-900 p-2 rounded-lg mr-3">
+            <i class="fas fa-shield-alt text-purple-400"></i>
+          </div>
+          <h3 class="font-bold text-lg">Secure & Reliable</h3>
+        </div>
+        <p class="text-gray-400 text-sm">All URLs are sanitized and validated for security. Our system uses connection pooling for high reliability.</p>
+      </div>
+      
+      <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+        <div class="flex items-center mb-3">
+          <div class="bg-purple-900 p-2 rounded-lg mr-3">
+            <i class="fas fa-chart-line text-purple-400"></i>
+          </div>
+          <h3 class="font-bold text-lg">Fast & Simple</h3>
+        </div>
+        <p class="text-gray-400 text-sm">Shorten your URLs instantly with a clean, easy-to-use interface. No sign-up required—just paste, shorten, and share!</p>
+      </div>
+      
+      <div class="bg-gray-800 p-6 rounded-xl shadow-lg">
+        <div class="flex items-center mb-3">
+          <div class="bg-purple-900 p-2 rounded-lg mr-3">
+            <i class="fas fa-fingerprint text-purple-400"></i>
+          </div>
+          <h3 class="font-bold text-lg">Custom URLs</h3>
+        </div>
+        <p class="text-gray-400 text-sm">Create memorable, branded short links with custom slugs that are easy to remember and share.</p>
+      </div>
+    </div>
   </div>
-
-  <footer class="absolute bottom-4 text-center w-full text-sm text-gray-500">
-    Made by Vikas Kumar, BTech CSE IIT Goa
+  
+  <footer class="text-center w-full text-sm text-gray-500 pb-4">
+    <p>Made by Vikas Kumar, BTech CSE IIT Goa</p>
+    <p class="mt-1 text-xs">Improved with enhanced performance, security, and features</p>
   </footer>
-
+  
   <script>
+    // Form elements
     const form = document.getElementById('shortenForm');
     const resultDiv = document.getElementById('result');
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('errorMessage');
+    const useCustomSlugCheckbox = document.getElementById('useCustomSlug');
+    const customSlugContainer = document.getElementById('customSlugContainer');
 
+    
+    // Toggle custom slug input visibility
+    useCustomSlugCheckbox.addEventListener('change', () => {
+      customSlugContainer.classList.toggle('hidden', !useCustomSlugCheckbox.checked);
+      if (useCustomSlugCheckbox.checked) {
+        document.getElementById('customSlug').setAttribute('required', '');
+      } else {
+        document.getElementById('customSlug').removeAttribute('required');
+      }
+    });
+    
+
+    
+
+    
+    // Form submission
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      resultDiv.innerHTML = `
-        <div class="flex items-center justify-center">
-          <svg class="animate-spin h-6 w-6 mr-2 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-          </svg>
-          <span>Shortening...</span>
-        </div>
-      `;
-
+      
+      // Hide previous results/errors
+      resultDiv.classList.add('hidden');
+      errorDiv.classList.add('hidden');
+      
+      // Show loading indicator
+      loadingDiv.classList.remove('hidden');
+      
+      // Get form data
+      const urlValue = document.getElementById('url').value;
+      let formData = new URLSearchParams({ url: urlValue });
+      
+      // Add custom slug if enabled
+      if (useCustomSlugCheckbox.checked) {
+        const customSlug = document.getElementById('customSlug').value;
+        formData.append('custom_slug', customSlug);
+      }
+      
       try {
-        const resp = await fetch('/shorten', {
+        const response = await fetch('/shorten', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ url: document.getElementById('url').value })
+          body: formData
         });
-        const data = await resp.json();
-        resultDiv.innerHTML = `
-          <p class="mb-4 text-green-400 font-semibold">Success! Here is your link:</p>
-          <div class="flex justify-center">
-            <input
-              id="shortUrl"
-              type="text"
-              value="${data.shortUrl}"
-              readonly
-              class="px-4 py-2 bg-gray-700 border border-gray-600 rounded-l-lg w-full max-w-xs focus:outline-none text-gray-100"
-            >
-            <button
-              id="copyBtn"
-              class="bg-purple-600 text-white px-4 py-2 rounded-r-lg hover:bg-purple-700 transition-colors duration-200"
-            >Copy</button>
-          </div>
-        `;
-        document.getElementById('copyBtn').addEventListener('click', () => {
-          navigator.clipboard.writeText(data.shortUrl);
-          const btn = document.getElementById('copyBtn');
-          btn.innerText = 'Copied!';
-          setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
-        });
-      } catch (err) {
-        resultDiv.innerHTML = '<p class="text-red-500">Error shortening URL. Please try again.</p>';
+        
+        const data = await response.json();
+        
+        // Hide loading indicator
+        loadingDiv.classList.add('hidden');
+        
+        if (data.status === 'error') {
+          // Show error message
+          errorDiv.classList.remove('hidden');
+          errorDiv.querySelector('p').textContent = data.message;
+          return;
+        }
+        
+        // Display results
+        resultDiv.classList.remove('hidden');
+        document.getElementById('shortUrl').value = data.shortUrl;
+        
+
+        
+        // Update expiry hours
+        document.getElementById('expiryHours').textContent = data.expiresAfterHours;
+
+        
+      } catch (error) {
+        // Hide loading indicator
+        loadingDiv.classList.add('hidden');
+        
+        // Show error message
+        errorDiv.classList.remove('hidden');
+        errorDiv.querySelector('p').textContent = 'Error connecting to server. Please try again.';
+        console.error('Error:', error);
+      }
+    });
+    
+    // Copy button functionality
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const shortUrlInput = document.getElementById('shortUrl');
+      shortUrlInput.select();
+      navigator.clipboard.writeText(shortUrlInput.value);
+      
+      const copyBtn = document.getElementById('copyBtn');
+      const originalText = copyBtn.innerHTML;
+      copyBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Copied!';
+      
+      setTimeout(() => {
+        copyBtn.innerHTML = originalText;
+      }, 2000);
+    });
+    
+    
+    // Basic URL validation
+    document.getElementById('url').addEventListener('input', function() {
+      const url = this.value.trim();
+      
+      // Simple validation - check if starts with http:// or https://
+      if (url && !url.match(/^https?:\/\//i)) {
+        this.setCustomValidity('URL must start with http:// or https://');
+      } else {
+        this.setCustomValidity('');
+      }
+    });
+    
+    // Custom slug validation
+    document.getElementById('customSlug').addEventListener('input', function() {
+      const slug = this.value;
+      const validSlugPattern = /^[a-zA-Z0-9_-]{4,16}$/;
+      
+      if (slug && !validSlugPattern.test(slug)) {
+        this.setCustomValidity('Custom slug must be 4-16 characters and can only contain letters, numbers, underscore and hyphen.');
+      } else {
+        this.setCustomValidity('');
       }
     });
   </script>
