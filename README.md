@@ -60,7 +60,7 @@ Short URLs expire after 24 hours.
 4. **Compile**
 
    ```bash
-   g++ -Wall -std=c++17 main.cpp -o url_shortener -lpthread -lsqlite3
+   g++ -Iinclude -std=c++17 -o new new.cpp -lsqlite3 -lpthread -lws2_32
    ```
 
 5. **Run**
@@ -103,7 +103,7 @@ Short URLs expire after 24 hours.
 5. **Compile**
 
    ```bash
-   g++ -Wall -std=c++17 main.cpp -o url_shortener.exe -lsqlite3 -lws2_32
+   g++ -Iinclude -std=c++17 -o new new.cpp -lsqlite3 -lpthread -lws2_32
    ```
 
 6. **Run**
